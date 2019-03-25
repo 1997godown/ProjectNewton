@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
+
     //all variables
     public float speed;
     public float slideSpeed;
@@ -21,6 +22,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = true;
     private bool canSlide;
     private bool isOnWall = false;
+    public float wallSlideSpeed;
 
     //jumping collision variables
     public Transform groundCheck;
@@ -65,9 +67,12 @@ public class PlayerController : MonoBehaviour
             moveInput = Input.GetAxisRaw("Horizontal");
             rb.velocity = new Vector2(moveInput * speed, rb.velocity.y);
         }
-        else if (isOnWall && !isGrounded)
+        else if (isOnWall && !isGrounded && rb.velocity.y < 0)
         {
-            rb.velocity = new Vector2(0, -1 * rb.gravityScale);
+            if (rb.velocity.y < -wallSlideSpeed)
+            {
+                rb.velocity = new Vector2(0, -wallSlideSpeed);
+            }
             if (Input.GetKey(KeyCode.A) && Input.GetKeyDown(KeyCode.Space))
             {
                 rb.velocity = new Vector2(-1 * speed, jumpForce);
@@ -75,6 +80,18 @@ public class PlayerController : MonoBehaviour
             else if (Input.GetKey(KeyCode.D) && Input.GetKeyDown(KeyCode.Space))
             {
                 rb.velocity = new Vector2(speed, jumpForce);
+            }
+            else if (!Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && Input.GetKeyDown(KeyCode.Space))
+            {
+                if (!facingRight)
+                {
+                    rb.velocity = Vector2.right * speed;
+                }
+                else if(facingRight)
+                {
+                    rb.velocity = Vector2.left * speed;
+                }
+                
             }
         }
         //animation alignment with direction
@@ -120,10 +137,12 @@ public class PlayerController : MonoBehaviour
     //animation alignment with direction
     void Flip()
     {
+  
         facingRight = !facingRight;
         Vector3 Scaler = transform.localScale;
         Scaler.x *= -1;
         transform.localScale = Scaler;
+
     }
     
     void Recoil()
